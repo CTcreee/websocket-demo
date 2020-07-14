@@ -1,0 +1,74 @@
+<html xmlns:th="http://www.w3.org/1999/xhtml"><head>
+    <script src="http://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+    <title>websocket</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <script type="text/javascript">
+        var websocket = null;
+        if ('WebSocket' in window) {
+            websocket = new WebSocket('ws://localhost:9000/webSocket');
+        } else {
+            alert('该浏览器不支持websocket');
+        }
+        websocket.onopen = function (ev) {
+            console.log('建立连接');
+        };
+        websocket.onclose = function (ev) {
+            console.log('连接关闭');
+        };
+        websocket.onmessage = function (ev) {
+            console.log('收到消息：' + ev.data);
+            var p = document.createElement("p");
+            var text = document.createTextNode(ev.data.toString()+"   "+new Date().toString());
+            p.appendChild(text);
+            var div1=document.getElementById("chat");
+            div1.appendChild(p);
+        };
+        window.onbeforeunload = function (ev) {
+            websocket.close();
+        }
+
+        function sendMsg(msg) {
+            var msg = document.getElementById("msg");
+            var user=document.getElementById("user").innerText;
+            websocket.send(user+"说:"+msg.value);
+            console.log('发送给服务端消息'+msg.value);
+            msg.value ='';
+        }
+        window.onload=function loadPerson()
+        {
+            $.ajax({
+                url:'/person',
+                type:'text',
+                success:function(res){
+                    $('#person').html(res);
+                }
+            });
+            $.ajax({
+                url:'/user',
+                type:'text',
+                success:function(res){
+                    $('#user').html(res);
+                }
+            });
+        }
+       
+    </script></head>
+
+<body>
+<h1>hello websocket </h1>
+<span>欢迎：</span>
+<span id="user"></span>
+<span>您已加入聊天室，当前在线人数: </span><span id="person">1</span>
+<br>
+<button onclick="sendMsg()">发送</button>
+<input type="text" id="msg" name="msg">
+<form action="/admin" method="post">
+    <input type="submit" value="shiro管理,管理员才能看">
+</form>
+
+<hr>
+<div id="chat"></div>
+
+</body>
+</html>
